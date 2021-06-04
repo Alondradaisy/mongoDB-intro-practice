@@ -1,65 +1,59 @@
-//User is coming from mongoDB schema
-// in human terms - a template to create a user
-
-const User = require('../model/User');
-
-
+//current version 6/2
+//User is coming from mongoDB Schema
+//in human term - a template to create a user
+const User = require("../model/User");
+//hashing password library
+const bcrypt = require("bcryptjs");
 //exporting an object with key and value
-//getAllUsers = key || function = value here
-
-
-module.exports = {
-    getAllUsers: function (callback) { //
-        // User.find({}) (empty object is to grab all the users)is a mongoose func to query the database
-        //takes in a callback that returns 2 params 1)err , 2) payload = data
-        User.find({}, function(err, payload) { //payload = data
-            //user.find will give back 2 things: either err or payload data
-
-            if(err) { //if there is an error, run the err msg on the callback func
-                callback(err, null); // err is an object with the message displaying err \\ if err is null, it does not run error func
-            } else {
-                callback(null, payload); // both callbacks are the same funcs, but the arguments being passed in is what makes them different
-            }
-        });
-    },
-    createUser: function (body, callback) { //accepts 2 arguments || body comes from POST req
-        let createdUser = new User({ // this refers to the createdUser down below
-            firstName: body.firstName,
-            lastName: body.lastName,
-            email: body.email,
-            password: body.password,
-            username: body.username,
-        });
-    
-        createdUser.save(function (err, payload) { //createdUser.save (function) saves it to the database || will assign a unique ID for the user
-            console.log('err');
-            if (err) {
-                callback(err, null);
-            } else {
-                callback(null, payload);
-            }
-        });
+async function getAllUsers(req, res) {
+    try {
+        let foundAllUsers = await User.find({});
+        res.json({ message: "success", data: foundAllUsers });
+    } catch (e) {
+        res.status(500).json({ message: "failure", error: e.message }); //err msg (e)
     }
-
-    updateUserByID: function (id, body, callback) {
-        User.findByIdAndUpdate({ _id: id}, body, {new:true}, function(err, updatedPayload) { //new: true is a key phrase that needs to be there to update to the updated version | if it's not there, it's automatically F and refers back to the old version
-            if (err) {
-                callback(err, null);
-            } else {
-                callback(null, updatedPayload); //if there is no err (null), run the callback func and display updatedPayload
-            };
+}
+async function createUser(req, res) {
+    const { password, firstName, lastName, email, username } = req.body;
+    try {
+        let createdSalt = await bcrypt.genSalt(10);
+        let hashedPassword = await bcrypt.hash(password, createdSalt);
+        let newUser = new User({
+            firstName,
+            lastName,
+            email,
+            username,
+            password: hashedPassword,
         });
-    },
-
-    deleteUserByID: function(id, callback) {
-
-        user.findByIdAndRemove({ _id: id }, function (err, deletedPayload) { // the underscore id is mongoDB's syntax of calling an ID | user.findByIdAndRemove is the a function method in mongoose | if you do not have mongoose required, it won't read it 
-            if (err) {
-                callback(err, null);
-            } else {
-                callback(null, deletedPayload);
-            }
-        }); 
-    },
+        let savedUser = await newUser.save();
+        res.json({ message: "success", data: savedUser });
+    } catch (e) { 
+        res.status(500).json({ message: "failure", error: e.message });
+    }
+}
+async function updateUserByID(req, res) {
+    const id = req.params.id;
+    try {
+        let updatedUser = await User.findByIdAndUpdate({ _id: id }, req.body, {
+            new: true,
+        });
+        res.json({ message: "success", data: updatedUser });
+    } catch (e) {
+        res.status(500).json({ message: "failure", error: e.message });
+    }
+}
+async function deleteUserByID(req, res) {
+    const id = req.params.id;
+    try {
+        let deletedUser = await User.findByIdAndRemove({ _id: id });
+        res.json({ message: "success", data: deletedUser });
+    } catch (e) {
+        res.status(500).json({ message: "failure", error: e.message });
+    }
+}
+module.exports = {
+    getAllUsers,
+    createUser,
+    updateUserByID,
+    deleteUserByID,
 };
-
