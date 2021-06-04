@@ -18,10 +18,9 @@ mongoose
     console.log(e); //returning promise that returns err if there's an err in connection 
   });
 
-const indexRouter = require('./routes/index'); // this is just a route that we created to reach a certain place
+const indexRouter = require('./routes/index'); 
 const usersRouter = require('./routes/users/usersRouter');
-const productsRouter = require('/api/products');
-
+const productsRouter = require('/api/productsRouter'),
 
 const app = express();
 
@@ -33,7 +32,7 @@ app.use(cookieParser()); // parses cookies
 
 app.use('/', indexRouter); // index router
 app.use('/users', usersRouter); // users router
-app.use('/api/products', productsRouter);
+app.use('/api/products', productsRouter); // this is just a route that we created to reach a certain place
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

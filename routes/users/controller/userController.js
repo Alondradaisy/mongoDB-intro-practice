@@ -12,13 +12,14 @@ async function getAllUsers(req, res) {
     } catch (e) {
         res.status(500).json({ message: "failure", error: e.message }); //err msg (e)
     }
-}
+},
+
 async function createUser(req, res) {
     const { password, firstName, lastName, email, username } = req.body;
     try {
         let createdSalt = await bcrypt.genSalt(10);
         let hashedPassword = await bcrypt.hash(password, createdSalt);
-        let newUser = new User({
+        let newUser = new User({ //create the newUser 
             firstName,
             lastName,
             email,
@@ -30,7 +31,8 @@ async function createUser(req, res) {
     } catch (e) { 
         res.status(500).json({ message: "failure", error: e.message });
     }
-}
+},
+
 async function updateUserByID(req, res) {
     const id = req.params.id;
     try {
@@ -41,7 +43,8 @@ async function updateUserByID(req, res) {
     } catch (e) {
         res.status(500).json({ message: "failure", error: e.message });
     }
-}
+},
+
 async function deleteUserByID(req, res) {
     const id = req.params.id;
     try {
